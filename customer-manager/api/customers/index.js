@@ -13,8 +13,19 @@ export default async function handler(req, res) {
       const page = Math.max(1, Number.parseInt(req.query.page || '1', 10) || 1);
       const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit || '20', 10) || 20));
       const from = (page - 1) * limit;
-      let query = supabase.from('customers').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, from + limit - 1);
-      if (q) query = query.or(`name.ilike.%${q.replace(/[(),]/g, ' ')}%,phone.ilike.%${q.replace(/[(),]/g, ' ')}%`);
+      
+      let query = supabase
+        .from('customers')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, from + limit - 1);
+      
+      if (q) {
+        // Tự động thêm % trước và sau, tìm kiếm linh hoạt
+        const searchPattern = `%${q}%`;
+        query = query.or(`name.ilike.${searchPattern},phone.ilike.${searchPattern}`);
+      }
+      
       const { data, count, error } = await query;
       if (error) throw error;
       return send(res, 200, { data, count, page, limit });
