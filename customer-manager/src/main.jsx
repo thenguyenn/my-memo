@@ -64,24 +64,51 @@ function App() {
 
   async function saveCustomer(event) {
     event.preventDefault();
+    
+    // Popup confirm trước khi lưu
+    const confirmMessage = editing 
+      ? `Xác nhận cập nhật thông tin khách hàng "${form.name}"?`
+      : `Xác nhận thêm khách hàng mới "${form.name}"?`;
+    
+    if (!window.confirm(confirmMessage)) return;
+    
     setLoading(true);
     try {
       const result = await request(editing ? `${API}/${editing}` : API, {
         method: editing ? 'PUT' : 'POST', body: JSON.stringify(form),
       });
-      setNotice(editing ? 'Đã cập nhật khách hàng.' : 'Đã thêm khách hàng.');
-      setEditing(null); setShowForm(false); setForm({ name: '', phone: '', address: '' });
+      setNotice(editing ? '✅ Đã cập nhật khách hàng.' : '✅ Đã thêm khách hàng.');
+      
+      // Nếu thêm mới: giữ form mở, chỉ clear text
+      if (!editing) {
+        setForm({ name: '', phone: '', address: '' });
+        // Focus vào ô tên
+        setTimeout(() => {
+          const nameInput = document.querySelector('input[placeholder="Nguyễn Văn A"]');
+          if (nameInput) nameInput.focus();
+        }, 100);
+      } else {
+        // Nếu sửa: đóng form
+        setEditing(null);
+        setShowForm(false);
+        setForm({ name: '', phone: '', address: '' });
+      }
+      
       if (!editing && page !== 1) setPage(1); else await loadCustomers();
     } catch (error) { setNotice(error.message); }
     finally { setLoading(false); }
   }
 
   async function deleteCustomer(customer) {
-    if (!window.confirm(`Bạn có chắc muốn xóa khách hàng ${customer.name}?`)) return;
+    // Popup confirm với thông tin rõ ràng
+    const confirmMessage = `⚠️ XÁC NHẬN XÓA KHÁCH HÀNG\n\nTên: ${customer.name}\nSĐT: ${customer.phone}\n\nKhách hàng sẽ bị ẩn khỏi danh sách (có thể khôi phục sau).\n\nBạn có chắc chắn muốn xóa?`;
+    
+    if (!window.confirm(confirmMessage)) return;
+    
     setLoading(true);
     try {
       await request(`${API}/${customer.id}`, { method: 'DELETE' });
-      setNotice('Đã xóa khách hàng.');
+      setNotice('🗑️ Đã xóa khách hàng (soft delete).');
       await loadCustomers();
     } catch (error) { setNotice(error.message); }
     finally { setLoading(false); }
@@ -177,8 +204,8 @@ function App() {
                 <td className="td-address">{c.address}</td>
                 <td className="td-actions">
                   <div className="row-actions">
-                    <button className="edit" onClick={() => openEdit(c)}>✏️ Sửa</button>
-                    <button className="delete" onClick={() => deleteCustomer(c)}>🗑️ Xóa</button>
+                    <button className="edit" onClick={() => openEdit(c)}>Sửa</button>
+                    <button className="delete" onClick={() => deleteCustomer(c)}>Xóa</button>
                   </div>
                 </td>
               </tr>

@@ -11,13 +11,28 @@ export default async function handler(req, res) {
   try {
     const supabase = db();
     if (req.method === 'DELETE') {
-      const { error } = await supabase.from('customers').delete().eq('id', id);
+      // Soft delete: chỉ cập nhật deleted_at thay vì xóa thật
+      const { error } = await supabase
+        .from('customers')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .is('deleted_at', null); // Chỉ soft delete nếu chưa bị xóa
+      
       if (error) throw error;
-      return send(res, 200, { success: true });
+      return send(res, 200, { success: true, message: 'Soft deleted successfully' });
     }
     const parsed = validCustomer(req.body);
     if (parsed.error) return send(res, 400, { error: parsed.error });
-    const { data, error } = await supabase.from('customers').update(parsed.data).eq('id', id).select().single();
+    
+    // Chỉ update khách hàng chưa bị xóa
+    const { data, error } = await supabase
+      .from('customers')
+      .update(parsed.data)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+    
     if (error) throw error;
     return send(res, 200, { data });
   } catch (error) {

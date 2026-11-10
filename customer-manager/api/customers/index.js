@@ -17,6 +17,7 @@ export default async function handler(req, res) {
       let query = supabase
         .from('customers')
         .select('*', { count: 'exact' })
+        .is('deleted_at', null) // Chỉ lấy khách hàng chưa bị xóa
         .order('created_at', { ascending: false })
         .range(from, from + limit - 1);
       
