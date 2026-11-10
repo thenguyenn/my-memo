@@ -126,19 +126,6 @@ function App() {
       <button className="primary" onClick={openAdd}>＋ Thêm khách hàng</button>
     </section>
 
-    <section className="stats">
-      <div className="stat-card">
-        <span>Tổng khách hàng</span>
-        <strong>{count.toLocaleString('vi-VN')}</strong>
-        <small>Hồ sơ trong hệ thống</small>
-      </div>
-      <div className="stat-card">
-        <span>Hiển thị</span>
-        <strong>{customers.length}</strong>
-        <small>Khách hàng ở trang này</small>
-      </div>
-    </section>
-
     {notice && <div className={`notice ${notice.includes('lỗi') || notice.includes('không') ? 'error' : 'success'}`}>{notice}</div>}
 
     {showForm ? (
