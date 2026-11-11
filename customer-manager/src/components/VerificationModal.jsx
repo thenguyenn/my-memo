@@ -105,9 +105,7 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
             </div>
           </form>
           
-          <p className="verification-hint">
-            💡 Mã mặc định: 123456
-          </p>
+          
         </div>
       </div>
     </div>
