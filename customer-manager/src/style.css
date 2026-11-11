@@ -647,10 +647,17 @@ td.td-actions {
 
 .verification-input.error {
   border-color: #dc2626;
+  animation: shake 0.5s;
 }
 
 .verification-input.error:focus {
   box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
 }
 
 .verification-error {

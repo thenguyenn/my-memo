@@ -3,12 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 export function VerificationModal({ isOpen, onVerify, onCancel }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setCode('');
       setError('');
+      setIsVerifying(false);
       document.body.style.overflow = 'hidden';
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
@@ -28,7 +30,20 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
       return;
     }
     
-    onVerify(code);
+    setIsVerifying(true);
+    setError('');
+    
+    // Gọi onVerify và check kết quả
+    const success = onVerify(code);
+    
+    if (!success) {
+      // Nếu sai, hiện lỗi trong modal
+      setError('❌ Mã xác minh không chính xác. Vui lòng thử lại.');
+      setIsVerifying(false);
+      setCode(''); // Clear input
+      inputRef.current?.focus();
+    }
+    // Nếu đúng, modal sẽ tự đóng bởi useVerification hook
   };
 
   const handleKeyDown = (e) => {
@@ -66,6 +81,7 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
                 onKeyDown={handleKeyDown}
                 placeholder="Nhập mã xác minh"
                 autoComplete="off"
+                disabled={isVerifying}
               />
               {error && <span className="verification-error">{error}</span>}
             </div>
@@ -75,20 +91,22 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
                 type="button"
                 className="verification-btn verification-btn-cancel" 
                 onClick={onCancel}
+                disabled={isVerifying}
               >
                 Hủy
               </button>
               <button 
                 type="submit"
                 className="verification-btn verification-btn-verify"
+                disabled={isVerifying}
               >
-                Xác nhận
+                {isVerifying ? 'Đang xác minh...' : 'Xác nhận'}
               </button>
             </div>
           </form>
           
           <p className="verification-hint">
-            💡 Liên hệ quản trị viên để lấy mã xác minh
+            💡 Mã mặc định: 123456
           </p>
         </div>
       </div>

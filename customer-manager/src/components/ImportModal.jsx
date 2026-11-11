@@ -10,19 +10,10 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
   return (
     <div className="panel import-panel">
       <div className="panel-title">
-        <h2>📁 Import danh bạ hàng loạt</h2>
+        <h2>📁 Import</h2>
         <button type="button" className="icon-button" onClick={onClose}>✕</button>
       </div>
       
-      <div className="import-instructions">
-        <p><strong>Hỗ trợ định dạng:</strong></p>
-        <ul>
-          <li><strong>.txt</strong> - File danh bạ (format: số thứ tự + tên, SĐT: xxx)</li>
-          <li><strong>.json</strong> - JSON array với keys: name/phone/address</li>
-          <li><strong>.xlsx/.xls</strong> - Excel với cột Tên, SĐT, Địa chỉ</li>
-        </ul>
-        <p className="muted">📞 Số điện thoại +84 sẽ tự động chuyển về định dạng 0xxx</p>
-      </div>
 
       <div className="file-upload-zone">
         <input 

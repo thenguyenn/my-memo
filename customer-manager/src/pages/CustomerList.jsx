@@ -190,13 +190,9 @@ export function CustomerList() {
   // Verification handlers
   const handleVerify = (code) => {
     const success = verify(code);
-    if (!success) {
-      alert({
-        title: '❌ Mã không đúng',
-        message: 'Mã xác minh không chính xác. Vui lòng thử lại.',
-        type: 'alert'
-      });
-    }
+    // Không cần xử lý gì ở đây
+    // Error sẽ được hiển thị trong modal
+    return success;
   };
 
   // Search handler
