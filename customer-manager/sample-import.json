@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Nguyễn Văn A",
+    "phone": "+84912345678",
+    "address": "123 Đường ABC, Quận 1, TP.HCM"
+  },
+  {
+    "name": "Trần Thị B",
+    "phone": "0987654321",
+    "address": "456 Đường XYZ, Hà Nội"
+  },
+  {
+    "name": "Lê Văn C",
+    "phone": "+84909876543",
+    "address": "789 Đường KLM, Đà Nẵng"
+  }
+]
