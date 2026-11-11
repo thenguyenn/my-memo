@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useCustomers } from '../hooks/useCustomers';
 import { useImport } from '../hooks/useImport';
+import { useConfirm } from '../hooks/useConfirm';
+import { useVerification } from '../hooks/useVerification';
 import { CustomerTable } from '../components/CustomerTable';
 import { CustomerForm } from '../components/CustomerForm';
 import { ImportModal } from '../components/ImportModal';
 import { Pagination } from '../components/Pagination';
 import { SearchBar } from '../components/SearchBar';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { VerificationModal } from '../components/VerificationModal';
 
 export function CustomerList() {
   const {
@@ -35,6 +39,17 @@ export function CustomerList() {
     reset: resetImport,
   } = useImport();
 
+  const { dialogState, confirm, alert } = useConfirm();
+  
+  const {
+    isVerified,
+    showVerifyModal,
+    verify,
+    requireVerification,
+    cancelVerification,
+    clearVerification,
+  } = useVerification();
+
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -43,17 +58,21 @@ export function CustomerList() {
 
   // Form handlers
   const openAdd = () => {
-    setEditing(null);
-    setShowForm(true);
-    setShowImport(false);
-    setNotice('');
+    requireVerification(() => {
+      setEditing(null);
+      setShowForm(true);
+      setShowImport(false);
+      setNotice('');
+    });
   };
 
   const openEdit = (customer) => {
-    setEditing(customer);
-    setShowForm(true);
-    setShowImport(false);
-    setNotice('');
+    requireVerification(() => {
+      setEditing(customer);
+      setShowForm(true);
+      setShowImport(false);
+      setNotice('');
+    });
   };
 
   const closeForm = () => {
@@ -62,6 +81,18 @@ export function CustomerList() {
   };
 
   const handleSave = async (formData) => {
+    const confirmed = await confirm({
+      title: editing ? 'Xác nhận cập nhật' : 'Xác nhận thêm mới',
+      message: editing 
+        ? `Bạn có chắc muốn cập nhật thông tin khách hàng "${formData.name}"?`
+        : `Bạn có chắc muốn thêm khách hàng "${formData.name}"?`,
+      confirmText: 'Xác nhận',
+      cancelText: 'Hủy',
+      type: 'confirm'
+    });
+
+    if (!confirmed) return;
+    
     setSaveLoading(true);
     try {
       if (editing) {
@@ -81,24 +112,34 @@ export function CustomerList() {
   };
 
   const handleDelete = async (customer) => {
-    const confirmMessage = `⚠️ XÁC NHẬN XÓA KHÁCH HÀNG\n\nTên: ${customer.name}\nSĐT: ${customer.phone}\n\nKhách hàng sẽ bị ẩn khỏi danh sách (có thể khôi phục sau).\n\nBạn có chắc chắn muốn xóa?`;
-    
-    if (!window.confirm(confirmMessage)) return;
+    requireVerification(async () => {
+      const confirmed = await confirm({
+        title: '⚠️ Xác nhận xóa khách hàng',
+        message: `Tên: ${customer.name}\nSĐT: ${customer.phone}\n\nKhách hàng sẽ bị ẩn khỏi danh sách (có thể khôi phục sau).\n\nBạn có chắc chắn muốn xóa?`,
+        confirmText: 'Xóa',
+        cancelText: 'Hủy',
+        type: 'warning'
+      });
 
-    try {
-      await deleteCustomer(customer.id);
-      setNotice('🗑️ Đã xóa khách hàng.');
-    } catch (err) {
-      setNotice('❌ ' + err.message);
-    }
+      if (!confirmed) return;
+
+      try {
+        await deleteCustomer(customer.id);
+        setNotice('🗑️ Đã xóa khách hàng.');
+      } catch (err) {
+        setNotice('❌ ' + err.message);
+      }
+    });
   };
 
   // Import handlers
   const openImport = () => {
-    setShowForm(false);
-    setShowImport(true);
-    resetImport();
-    setNotice('');
+    requireVerification(() => {
+      setShowForm(false);
+      setShowImport(true);
+      resetImport();
+      setNotice('');
+    });
   };
 
   const closeImport = () => {
@@ -108,6 +149,16 @@ export function CustomerList() {
   };
 
   const handleImport = async (onProgress) => {
+    const confirmed = await confirm({
+      title: 'Xác nhận import',
+      message: `Bạn có muốn import ${importData.length} khách hàng vào hệ thống?\n\nLưu ý: Quá trình này có thể mất vài phút.`,
+      confirmText: 'Import',
+      cancelText: 'Hủy',
+      type: 'confirm'
+    });
+
+    if (!confirmed) return;
+
     try {
       const result = await importAllContacts((current, total) => {
         setNotice(`⏳ Đang import: ${current}/${total}...`);
@@ -115,7 +166,15 @@ export function CustomerList() {
 
       closeImport();
       await reload();
-      setNotice(`✅ Import hoàn tất: ${result.success} thành công${result.failed > 0 ? `, ${result.failed} lỗi` : ''}`);
+      
+      await alert({
+        title: '✅ Import thành công',
+        message: `Đã import ${result.success} khách hàng thành công${result.failed > 0 ? `\n${result.failed} khách hàng bị lỗi` : ''}`,
+        confirmText: 'OK',
+        type: 'success'
+      });
+      
+      setNotice('');
     } catch (err) {
       setNotice('❌ ' + err.message);
     }
@@ -125,6 +184,18 @@ export function CustomerList() {
     handleFileUpload(file);
     if (!importError) {
       setNotice(`✅ Đã phân tích ${importData.length} liên hệ từ file ${file.name}`);
+    }
+  };
+
+  // Verification handlers
+  const handleVerify = (code) => {
+    const success = verify(code);
+    if (!success) {
+      alert({
+        title: '❌ Mã không đúng',
+        message: 'Mã xác minh không chính xác. Vui lòng thử lại.',
+        type: 'alert'
+      });
     }
   };
 
@@ -142,7 +213,26 @@ export function CustomerList() {
           <h1>Danh sách khách hàng</h1>
           <p className="muted">Quản lý thông tin khách hàng tập trung trên nền tảng trực tuyến.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* Verification Badge */}
+          <div 
+            className={`verification-badge ${isVerified ? 'verified' : 'unverified'}`}
+            onClick={() => isVerified ? clearVerification() : requireVerification(() => {})}
+            title={isVerified ? 'Click để đăng xuất' : 'Chưa xác minh'}
+          >
+            {isVerified ? (
+              <>
+                <span>✓</span>
+                <span>Đã xác minh</span>
+              </>
+            ) : (
+              <>
+                <span>🔒</span>
+                <span>Chưa xác minh</span>
+              </>
+            )}
+          </div>
+          
           <button 
             className="ghost" 
             onClick={openImport} 
@@ -227,6 +317,13 @@ export function CustomerList() {
       </section>
 
       <footer>Thông tin khách hàng được lưu trên cơ sở dữ liệu trực tuyến.</footer>
+
+      <ConfirmDialog {...dialogState} />
+      <VerificationModal 
+        isOpen={showVerifyModal}
+        onVerify={handleVerify}
+        onCancel={cancelVerification}
+      />
     </main>
   );
 }

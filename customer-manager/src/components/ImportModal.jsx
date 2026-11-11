@@ -4,9 +4,6 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
   const fileInputRef = useRef(null);
 
   const handleImport = async () => {
-    const confirmMsg = `Xác nhận import ${importData.length} khách hàng vào hệ thống?\n\nLưu ý: Quá trình này có thể mất vài phút.`;
-    if (!window.confirm(confirmMsg)) return;
-    
     await onImport(onProgressUpdate);
   };
 

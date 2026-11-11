@@ -17,13 +17,6 @@ export function CustomerForm({ customer, onSave, onCancel, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    const confirmMessage = customer 
-      ? `Xác nhận cập nhật thông tin khách hàng "${form.name}"?`
-      : `Xác nhận thêm khách hàng mới "${form.name}"?`;
-    
-    if (!window.confirm(confirmMessage)) return;
-    
     onSave(form);
   };
 
