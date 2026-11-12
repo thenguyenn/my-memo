@@ -115,7 +115,7 @@ export function CustomerList() {
     requireVerification(async () => {
       const confirmed = await confirm({
         title: '⚠️ Xác nhận xóa khách hàng',
-        message: `Tên: ${customer.name}\nSĐT: ${customer.phone}\n\nKhách hàng sẽ bị ẩn khỏi danh sách (có thể khôi phục sau).\n\nBạn có chắc chắn muốn xóa?`,
+        message: `Tên: ${customer.name}\nSĐT: ${customer.phone}\n\nBạn có chắc chắn muốn xóa?`,
         confirmText: 'Xóa',
         cancelText: 'Hủy',
         type: 'warning'
