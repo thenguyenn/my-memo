@@ -5,12 +5,14 @@ export function CustomerForm({ customer, onSave, onCancel, loading }) {
 
   useEffect(() => {
     if (customer) {
+      // Đang edit - load dữ liệu khách hàng
       setForm({
         name: customer.name,
         phone: customer.phone,
         address: customer.address,
       });
     } else {
+      // Thêm mới hoặc sau khi thêm thành công - reset form
       setForm({ name: '', phone: '', address: '' });
     }
   }, [customer]);
@@ -18,6 +20,7 @@ export function CustomerForm({ customer, onSave, onCancel, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(form);
+    // Form sẽ tự động clear qua useEffect khi customer = null
   };
 
   return (

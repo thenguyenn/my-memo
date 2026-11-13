@@ -56,6 +56,16 @@ export function CustomerList() {
   const [notice, setNotice] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
 
+  // Auto-hide notice sau 3 giây
+  React.useEffect(() => {
+    if (notice) {
+      const timer = setTimeout(() => {
+        setNotice('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notice]);
+
   // Form handlers
   const openAdd = () => {
     requireVerification(() => {
@@ -97,12 +107,13 @@ export function CustomerList() {
     try {
       if (editing) {
         await updateCustomer(editing.id, formData);
-        setNotice('✅ Đã cập nhật khách hàng.');
-        closeForm();
+        setNotice('✅ Đã cập nhật thông tin khách hàng thành công');
+        closeForm(); // Đóng form khi cập nhật
       } else {
         await createCustomer(formData);
-        setNotice('✅ Đã thêm khách hàng.');
-        // Giữ form mở để thêm tiếp
+        setNotice('✅ Đã thêm khách hàng mới thành công');
+        // Không đóng form, chỉ clear form để thêm tiếp
+        setEditing(null);
       }
     } catch (err) {
       setNotice('❌ ' + err.message);
@@ -125,7 +136,7 @@ export function CustomerList() {
 
       try {
         await deleteCustomer(customer.id);
-        setNotice('🗑️ Đã xóa khách hàng.');
+        setNotice('✅ Đã xóa khách hàng thành công');
       } catch (err) {
         setNotice('❌ ' + err.message);
       }

@@ -917,70 +917,276 @@ td.td-actions {
   color: #3b82f6;
 }
 
-/* Responsive */
+
+
+
+/* ============================================
+   RESPONSIVE - Tối ưu cho Mobile
+============================================ */
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+}
+
 @media (max-width: 768px) {
-  .dialog-container {
-    width: calc(100% - 32px);
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
   }
   
-  .dialog-content {
-    padding: 24px;
+  .sidebar.open {
+    transform: translateX(0);
   }
   
-  .dialog-icon {
-    font-size: 40px;
-  }
-  
-  .dialog-title {
-    font-size: 18px;
-  }
-  
-  .dialog-actions {
-    flex-direction: column-reverse;
-  }
-  
-  .dialog-btn {
+  .app-layout.verified .main-content {
+    margin-left: 0;
     width: 100%;
   }
   
-  .app-shell {
-    padding: 0 16px 32px;
+  .main-content {
+    padding: var(--spacing-md);
   }
   
-  .page-heading {
+  .top-header {
     flex-direction: column;
     align-items: flex-start;
-    padding: 32px 0 24px;
+    gap: var(--spacing-md);
   }
   
-  .page-heading h1 {
-    font-size: 26px;
+  .page-title {
+    font-size: 22px;
   }
   
-  .panel {
-    padding: 20px;
+  .page-subtitle {
+    font-size: 13px;
   }
   
-  .table-toolbar {
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  /* Buttons nhỏ gọn hơn trên mobile */
+  .btn-action {
+    padding: 10px 16px;
+    font-size: 13px;
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .btn-action span:first-child {
+    font-size: 16px;
+  }
+  
+  .verification-badge {
+    padding: 10px 16px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .card-header {
     flex-direction: column;
     align-items: flex-start;
+    padding: var(--spacing-lg);
+  }
+  
+  .card-title {
+    font-size: 18px;
   }
   
   .search {
     width: 100%;
+    height: 44px;
+  }
+  
+  /* Mobile Table Cards - Tối ưu cho điện thoại */
+  .data-table thead {
+    display: none;
+  }
+  
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+  }
+  
+  .data-table tr {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    background: white;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .data-table td {
+    padding: var(--spacing-sm) 0;
+    border: none;
+    text-align: left !important;
+  }
+  
+  .data-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--color-gray-500);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Fix số điện thoại hiển thị đầy đủ */
+  .td-phone {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--color-primary) !important;
+    word-break: break-all;
+    font-family: var(--font-mono);
+  }
+  
+  .td-name strong {
+    font-size: 16px;
+  }
+  
+  .td-address {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  .td-actions::before {
+    content: 'Thao tác';
+  }
+  
+  .td-actions {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-gray-100);
+  }
+  
+  .row-actions {
+    justify-content: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  /* Buttons nhỏ gọn hơn */
+  .edit, .delete {
+    padding: 8px 14px;
+    font-size: 12px;
+    flex: 1;
+  }
+  
+  .customer-info {
+    flex-direction: row;
+  }
+  
+  .customer-number {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    padding: var(--spacing-md);
+  }
+  
+  .pagination-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
   
   .form-grid {
     grid-template-columns: 1fr;
   }
   
-  .form-grid .wide {
-    grid-column: auto;
+  .panel {
+    padding: var(--spacing-lg);
   }
   
-  .pagination {
+  .upload-button {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+  
+  .upload-button::before {
+    font-size: 48px;
+  }
+  
+  .notification {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 13px;
+  }
+  
+  .notification-icon {
+    font-size: 20px;
+  }
+  
+  /* Form mobile */
+  .form-grid input {
+    height: 46px;
+    font-size: 14px;
+  }
+  
+  .form-actions {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .btn-action {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+  
+  .btn-action span:first-child {
+    font-size: 15px;
+  }
+  
+  /* Stack buttons vertically on very small screens */
+  .header-actions {
+    flex-direction: column;
+  }
+  
+  .btn-action,
+  .verification-badge {
+    width: 100%;
+  }
+  
+  /* Smaller row action buttons */
+  .edit, .delete {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  
+  .edit::before,
+  .delete::before {
+    margin-right: 3px;
+  }
+  
+  /* Card spacing */
+  .content-card {
+    margin: 0 -var(--spacing-md);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .data-table tr {
+    padding: var(--spacing-sm);
   }
 }
