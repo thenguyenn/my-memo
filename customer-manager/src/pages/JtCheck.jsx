@@ -125,10 +125,10 @@ export function JtCheck() {
         <div>
           <p className="eyebrow">SOÁT TỒN KHO</p>
           <h1>Soát hàng J&amp;T</h1>
-          <p className="muted">
+          {/* <p className="muted">
             Đơn tồn theo shipper để báo mang hàng về kho trước khi vào backlog SLA.
             {jt.summary?.lastImportedAt && ` Cập nhật lần cuối: ${fmtDate(jt.summary.lastImportedAt)}.`}
-          </p>
+          </p> */}
         </div>
         <div>
           <button className="ghost" onClick={jt.reload} disabled={jt.summaryLoading}>↻ Tải lại</button>
