@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCustomers } from '../hooks/useCustomers';
 import { useImport } from '../hooks/useImport';
 import { useConfirm } from '../hooks/useConfirm';
-import { useVerification } from '../hooks/useVerification';
+import { useVerification } from '../context/VerificationContext';
 import { CustomerTable } from '../components/CustomerTable';
 import { CustomerForm } from '../components/CustomerForm';
 import { ImportModal } from '../components/ImportModal';
@@ -222,7 +222,7 @@ export function CustomerList() {
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {/* Verification Badge */}
-          <div 
+          {/* <div 
             className={`verification-badge ${isVerified ? 'verified' : 'unverified'}`}
             onClick={() => isVerified ? clearVerification() : requireVerification(() => {})}
             title={isVerified ? 'Click để đăng xuất' : 'Chưa xác minh'}
@@ -238,7 +238,7 @@ export function CustomerList() {
                 <span>Chưa xác minh</span>
               </>
             )}
-          </div>
+          </div> */}
           
           <button 
             className="ghost" 

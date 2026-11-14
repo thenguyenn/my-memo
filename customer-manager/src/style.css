@@ -1433,3 +1433,57 @@ td.td-address { color: #74857e; font-size: 13px; }
   .page-heading > div:last-child button { font-size: 11px; }
   tbody tr.customer-row { padding: 10px; gap: 0 8px; }
 }
+
+/* ===== Menu + trang Soát hàng J&T ===== */
+.topbar { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-bottom: 1px solid #e0eae6; }
+.topbar-inner { width: min(100% - 64px, 1420px); margin: 0 auto; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.topbar-brand { font-weight: 700; color: #123c33; }
+.topnav { display: flex; gap: 6px; }
+.topnav a { padding: 9px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; color: #425d55; text-decoration: none; }
+.topnav a:hover { background: #f4fbf8; }
+.topnav a.active { background: #e6f8f0; color: #08765e; }
+.gate { max-width: 460px; margin: 80px auto; text-align: center; }
+.gate-icon { font-size: 40px; }
+.gate .primary { margin-top: 18px; }
+
+.jt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+.jt-stat { padding: 18px 20px; border-radius: 16px; background: #fff; border: 1px solid #e0eae6; display: flex; flex-direction: column; gap: 6px; }
+.jt-stat span { font-size: 13px; color: #6b7280; }
+.jt-stat strong { font-size: 30px; color: #123c33; }
+.jt-stat.warn { background: #fffbeb; border-color: #fde68a; }
+.jt-stat.warn strong { color: #b45309; }
+.jt-stat.danger { background: #fef2f2; border-color: #fecaca; }
+.jt-stat.danger strong { color: #b91c1c; }
+
+.days-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.days-badge.ok { background: #e6f8f0; color: #08765e; }
+.days-badge.warn { background: #fef3c7; color: #92400e; }
+.days-badge.danger { background: #fee2e2; color: #b91c1c; }
+
+.jt-tabs { display: flex; gap: 6px; background: #f3f4f6; padding: 4px; border-radius: 12px; }
+.jt-tabs button { background: transparent; padding: 9px 16px; border-radius: 9px; font-weight: 600; color: #6b7280; }
+.jt-tabs button.active { background: #fff; color: #08765e; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.jt-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.jt-expand { background: #f9fafb; }
+.jt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.jt-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; font-size: 13px; }
+
+.jt-import-grid { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; margin-top: 16px; }
+.jt-paste { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.jt-paste textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font: inherit; font-size: 13px; resize: vertical; }
+.jt-mapping { margin-top: 20px; }
+.jt-mapping h3 { margin: 0 0 12px; font-size: 15px; }
+.jt-mapping-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.jt-mapping-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #425d55; }
+.jt-mapping-grid select { padding: 9px 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; background: #fff; }
+.jt-ok { color: #065f46; font-weight: 600; font-size: 14px; }
+.jt-bad { color: #991b1b; font-weight: 600; font-size: 14px; }
+.jt-check { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0; font-size: 14px; }
+
+@media (max-width: 720px) {
+  .topbar-inner { width: calc(100% - 32px); }
+  .topnav a { padding: 8px 10px; font-size: 13px; }
+  .topbar .verification-badge { width: auto; padding: 8px 10px; }
+  .jt-stats { grid-template-columns: 1fr; }
+  .jt-import-grid { grid-template-columns: 1fr; }
+}

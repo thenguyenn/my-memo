@@ -22,7 +22,7 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
     };
   }, [isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!code.trim()) {
@@ -34,7 +34,7 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
     setError('');
     
     // Gọi onVerify và check kết quả
-    const success = onVerify(code);
+    const success = await onVerify(code);
     
     if (!success) {
       // Nếu sai, hiện lỗi trong modal
