@@ -29,20 +29,31 @@ export function VerificationProvider({ children }) {
     else clearVerification();
   }, [clearVerification]);
 
-  // Mã được kiểm tra ở server; trả về true/false
+  // Mã được kiểm tra trên client-side với biến env
   const verify = useCallback(async (code) => {
     try {
-      const { token, expiresAt } = await api.verify(code);
-      localStorage.setItem(STORAGE_KEY, 'true');
-      localStorage.setItem(EXPIRY_KEY, String(expiresAt));
-      localStorage.setItem(TOKEN_KEY, token);
-      setIsVerified(true);
-      setShowVerifyModal(false);
-      const action = pendingRef.current;
-      pendingRef.current = null;
-      if (action) action();
-      return true;
-    } catch {
+      // Lấy mã xác minh từ environment variable
+      const correctCode = import.meta.env.VITE_VERIFY_CODE || '271104';
+      
+      if (code === correctCode) {
+        // Tạo token và thời gian hết hạn
+        const token = `verified_${Date.now()}`;
+        const expiresAt = Date.now() + (8 * 60 * 60 * 1000); // 8 giờ
+        
+        localStorage.setItem(STORAGE_KEY, 'true');
+        localStorage.setItem(EXPIRY_KEY, String(expiresAt));
+        localStorage.setItem(TOKEN_KEY, token);
+        setIsVerified(true);
+        setShowVerifyModal(false);
+        const action = pendingRef.current;
+        pendingRef.current = null;
+        if (action) action();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
       return false;
     }
   }, []);
