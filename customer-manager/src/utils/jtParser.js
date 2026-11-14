@@ -1,10 +1,8 @@
 import * as XLSX from 'xlsx';
-
 /**
  * Đọc file/bảng xuất từ hệ thống J&T (JMS) và chuyển thành danh sách đơn tồn.
  * Tự nhận diện cột theo tên tiêu đề; người dùng có thể chọn lại cột trong giao diện.
  */
-
 const norm = (s) =>
   String(s ?? '')
     .replace(/đ/gi, 'd')
@@ -13,7 +11,6 @@ const norm = (s) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
-
 // Thứ tự = độ ưu tiên. Khớp chính xác trước, khớp chứa sau.
 const ALIASES = {
   waybill: ['ma van don', 'van don', 'waybill no', 'waybill number', 'waybill', 'bill code', 'billcode', 'ma don hang', 'ma don'],
@@ -25,7 +22,6 @@ const ALIASES = {
   status: ['trang thai', 'status'],
   branch: ['buu cuc', 'chi nhanh', 'branch'],
 };
-
 function findCol(headers, aliases) {
   for (const a of aliases) {
     const i = headers.findIndex((h) => h === a);
@@ -37,14 +33,12 @@ function findCol(headers, aliases) {
   }
   return -1;
 }
-
 function detectMapping(headers) {
   const h = headers.map(norm);
   const m = {};
   for (const key of Object.keys(ALIASES)) m[key] = findCol(h, ALIASES[key]);
   return m;
 }
-
 function findHeaderRow(rows) {
   const limit = Math.min(rows.length, 15);
   for (let i = 0; i < limit; i++) {
@@ -53,13 +47,11 @@ function findHeaderRow(rows) {
   }
   return 0;
 }
-
 function toIso(y, mo, d, H = 0, M = 0, S = 0) {
   // Dữ liệu J&T là giờ Việt Nam (UTC+7)
   const t = Date.UTC(y, mo - 1, d, H - 7, M, S);
   return Number.isNaN(t) ? null : new Date(t).toISOString();
 }
-
 export function parseDateValue(v) {
   if (v === null || v === undefined || v === '') return null;
   if (typeof v === 'number') {
@@ -75,7 +67,6 @@ export function parseDateValue(v) {
   if (m) return toIso(+m[3], +m[2], +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
   return null;
 }
-
 function makeTable(rows) {
   const clean = rows.filter((r) => r.some((c) => String(c ?? '').trim() !== ''));
   if (clean.length < 2) throw new Error('Không tìm thấy dữ liệu (cần dòng tiêu đề và ít nhất 1 dòng dữ liệu).');
@@ -84,7 +75,6 @@ function makeTable(rows) {
   const dataRows = clean.slice(headerIndex + 1);
   return { headers, dataRows, mapping: detectMapping(headers) };
 }
-
 export async function parseJtFile(file) {
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array', raw: true });
@@ -92,13 +82,11 @@ export async function parseJtFile(file) {
   if (!ws) throw new Error('File không có sheet dữ liệu.');
   return makeTable(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' }));
 }
-
 /** Dán trực tiếp từ bảng trên web J&T (copy → paste, các cột ngăn bằng Tab) */
 export function parseJtText(text) {
   const rows = String(text || '').split(/\r?\n/).map((line) => line.split('\t'));
   return makeTable(rows);
 }
-
 /** Chuyển bảng + cách chọn cột thành danh sách đơn gửi lên server */
 export function buildParcels({ dataRows }, mapping) {
   const get = (row, i) => (i >= 0 ? row[i] : '');
@@ -106,7 +94,6 @@ export function buildParcels({ dataRows }, mapping) {
   const now = Date.now();
   const rows = [];
   let skipped = 0;
-
   for (const row of dataRows) {
     const waybill = text(row, mapping.waybill);
     let since = parseDateValue(get(row, mapping.stock));

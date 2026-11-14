@@ -66,6 +66,7 @@ export function JtImport({ onDone, onClose }) {
   };
 
   const setCol = (key, value) => setMapping((m) => ({ ...m, [key]: Number(value) }));
+
   const ready = built && built.rows.length > 0;
 
   return (
@@ -78,7 +79,6 @@ export function JtImport({ onDone, onClose }) {
         Xuất danh sách <strong>đơn tồn / chưa giao</strong> từ hệ thống J&amp;T (file Excel hoặc CSV), rồi tải lên đây.
         Hoặc copy bảng trên web J&amp;T và dán vào ô bên dưới.
       </p>
-
       <div className="jt-import-grid">
         <div>
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" hidden onChange={(e) => onFile(e.target.files?.[0])} />
@@ -94,9 +94,7 @@ export function JtImport({ onDone, onClose }) {
           <button className="ghost" onClick={onPaste} disabled={!pasteText.trim()}>Phân tích dữ liệu dán</button>
         </div>
       </div>
-
       {error && <div className="notice error" style={{ marginTop: 16 }}>❌ {error}</div>}
-
       {table && mapping && (
         <div className="jt-mapping">
           <h3>Kiểm tra cột dữ liệu</h3>
@@ -113,13 +111,11 @@ export function JtImport({ onDone, onClose }) {
               </label>
             ))}
           </div>
-
           <p className={ready ? 'jt-ok' : 'jt-bad'}>
             {ready
               ? `✅ Đọc được ${built.rows.length} đơn hợp lệ${built.skipped ? `, bỏ qua ${built.skipped} dòng thiếu mã vận đơn hoặc ngày` : ''}.`
-              : '⚠️ Chưa đọc được đơn nào. Hãy chọn đúng cột Mã vận đơn và cột Thời gian (hoặc Số ngày tồn).'}
+              : '⚠ Chưa đọc được đơn nào. Hãy chọn đúng cột Mã vận đơn và cột Thời gian (hoặc Số ngày tồn).'}
           </p>
-
           {ready && (
             <div className="table-scroll">
               <table style={{ minWidth: 520 }}>
@@ -138,12 +134,10 @@ export function JtImport({ onDone, onClose }) {
               </table>
             </div>
           )}
-
           <label className="jt-check">
             <input type="checkbox" checked={snapshot} onChange={(e) => setSnapshot(e.target.checked)} />
             <span>File này là <strong>toàn bộ</strong> danh sách tồn hiện tại (tự đóng các đơn không còn trong file)</span>
           </label>
-
           <div className="form-actions">
             <button className="primary" disabled={!ready || busy} onClick={submit}>
               {busy ? 'Đang import…' : `Import ${ready ? built.rows.length : ''} đơn`}

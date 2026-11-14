@@ -5,6 +5,7 @@ import { Pagination } from '../components/Pagination';
 import { JtImport } from '../components/JtImport';
 
 const SHIPPER_PAGE_SIZE = 10;
+
 const fmtDate = (iso) =>
   iso ? new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false }) : '—';
 
@@ -99,19 +100,75 @@ export function JtCheck() {
   const [showImport, setShowImport] = useState(false);
   const [notice, setNotice] = useState('');
   const [shipperPage, setShipperPage] = useState(1);
+  const [sortField, setSortField] = useState('max_days'); // 'shipper_name' | 'total' | 'max_days'
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
+  const [parcelSortField, setParcelSortField] = useState('days_in_stock');
+  const [parcelSortOrder, setParcelSortOrder] = useState('desc');
 
   useEffect(() => {
     if (!notice) return;
     const t = setTimeout(() => setNotice(''), 4000);
     return () => clearTimeout(t);
   }, [notice]);
+
   useEffect(() => setShipperPage(1), [jt.minDays]);
 
-  const thresholds = jt.summary?.thresholds || { warn: 2, danger: 3 };
+  const thresholds = jt.summary?.thresholds || { warn: 5, danger: 6 };
   const stats = jt.summary?.stats;
-  const shippers = jt.summary?.shippers || [];
+  
+  // Sắp xếp shippers
+  const shippers = [...(jt.summary?.shippers || [])].sort((a, b) => {
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+    if (sortField === 'shipper_name') {
+      aVal = String(aVal || '').toLowerCase();
+      bVal = String(bVal || '').toLowerCase();
+      return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    }
+    return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+  });
+  
   const shipperPages = Math.max(1, Math.ceil(shippers.length / SHIPPER_PAGE_SIZE));
   const shipperSlice = shippers.slice((shipperPage - 1) * SHIPPER_PAGE_SIZE, shipperPage * SHIPPER_PAGE_SIZE);
+
+  // Sắp xếp parcels
+  const sortedParcels = [...jt.parcels].sort((a, b) => {
+    let aVal = a[parcelSortField];
+    let bVal = b[parcelSortField];
+    if (parcelSortField === 'waybill' || parcelSortField === 'shipper_name' || parcelSortField === 'status') {
+      aVal = String(aVal || '').toLowerCase();
+      bVal = String(bVal || '').toLowerCase();
+      return parcelSortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    }
+    if (parcelSortField === 'stock_since') {
+      aVal = new Date(aVal).getTime();
+      bVal = new Date(bVal).getTime();
+    }
+    return parcelSortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+  });
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const handleParcelSort = (field) => {
+    if (parcelSortField === field) {
+      setParcelSortOrder(parcelSortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setParcelSortField(field);
+      setParcelSortOrder('desc');
+    }
+  };
+
+  const SortIcon = ({ field, currentField, order }) => {
+    if (field !== currentField) return <span className="sort-icon">⇅</span>;
+    return <span className="sort-icon">{order === 'asc' ? '↑' : '↓'}</span>;
+  };
 
   const handleImported = async (r) => {
     setShowImport(false);
@@ -125,28 +182,20 @@ export function JtCheck() {
         <div>
           <p className="eyebrow">SOÁT TỒN KHO</p>
           <h1>Soát hàng J&amp;T</h1>
-          {/* <p className="muted">
-            Đơn tồn theo shipper để báo mang hàng về kho trước khi vào backlog SLA.
-            {jt.summary?.lastImportedAt && ` Cập nhật lần cuối: ${fmtDate(jt.summary.lastImportedAt)}.`}
-          </p> */}
         </div>
         <div>
           <button className="ghost" onClick={jt.reload} disabled={jt.summaryLoading}>↻ Tải lại</button>
           <button className="primary" onClick={() => setShowImport(true)}>📥 Cập nhật dữ liệu J&amp;T</button>
         </div>
       </section>
-
       {notice && <div className={`notice ${notice.includes('❌') ? 'error' : 'success'}`}>{notice}</div>}
       {jt.error && <div className="notice error">❌ {jt.error}</div>}
-
       {showImport && <JtImport onDone={handleImported} onClose={() => setShowImport(false)} />}
-
       <section className="jt-stats">
         <div className="jt-stat"><span>Đơn đang tồn</span><strong>{stats?.total ?? '—'}</strong></div>
-        <div className="jt-stat warn"><span>Từ {thresholds.warn} ngày</span><strong>{stats?.warn ?? '—'}</strong></div>
-        <div className="jt-stat danger"><span>Từ {thresholds.danger} ngày (cần báo ngay)</span><strong>{stats?.danger ?? '—'}</strong></div>
+        <div className="jt-stat warn"><span>Từ 5 ngày</span><strong>{stats?.warn ?? '—'}</strong></div>
+        <div className="jt-stat danger"><span>Từ 6-7 ngày (cần báo ngay)</span><strong>{stats?.danger ?? '—'}</strong></div>
       </section>
-
       <section className="panel table-panel">
         <div className="table-toolbar">
           <div className="jt-tabs">
@@ -156,10 +205,9 @@ export function JtCheck() {
           <div className="jt-filters">
             <select className="page-limit-select" value={jt.minDays} onChange={(e) => jt.changeMinDays(Number(e.target.value))}>
               <option value={0}>Tất cả đơn tồn</option>
-              <option value={1}>Tồn từ 1 ngày</option>
-              <option value={2}>Tồn từ 2 ngày</option>
               <option value={3}>Tồn từ 3 ngày</option>
               <option value={5}>Tồn từ 5 ngày</option>
+              <option value={7}>Tồn từ 7 ngày</option>
             </select>
             {jt.view === 'parcels' && (
               <div className="search">
@@ -169,14 +217,23 @@ export function JtCheck() {
             )}
           </div>
         </div>
-
         {jt.view === 'shippers' ? (
           <>
             <div className="table-scroll">
               <table>
                 <thead>
                   <tr>
-                    <th>SHIPPER</th><th>SĐT</th><th>SỐ ĐƠN TỒN</th><th>TỒN LÂU NHẤT</th><th className="th-actions">THAO TÁC</th>
+                    <th onClick={() => handleSort('shipper_name')} style={{ cursor: 'pointer' }}>
+                      SHIPPER <SortIcon field="shipper_name" currentField={sortField} order={sortOrder} />
+                    </th>
+                    <th>SĐT</th>
+                    <th onClick={() => handleSort('total')} style={{ cursor: 'pointer' }}>
+                      SỐ ĐƠN TỒN <SortIcon field="total" currentField={sortField} order={sortOrder} />
+                    </th>
+                    <th onClick={() => handleSort('max_days')} style={{ cursor: 'pointer' }}>
+                      TỒN LÂU NHẤT <SortIcon field="max_days" currentField={sortField} order={sortOrder} />
+                    </th>
+                    <th className="th-actions">THAO TÁC</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,16 +260,30 @@ export function JtCheck() {
               <table>
                 <thead>
                   <tr>
-                    <th>MÃ VẬN ĐƠN</th><th>SỐ NGÀY TỒN</th><th>SHIPPER</th><th>TRẠNG THÁI</th><th>BẮT ĐẦU TỒN</th>
+                    <th onClick={() => handleParcelSort('waybill')} style={{ cursor: 'pointer' }}>
+                      MÃ VẬN ĐƠN <SortIcon field="waybill" currentField={parcelSortField} order={parcelSortOrder} />
+                    </th>
+                    <th onClick={() => handleParcelSort('days_in_stock')} style={{ cursor: 'pointer' }}>
+                      SỐ NGÀY TỒN <SortIcon field="days_in_stock" currentField={parcelSortField} order={parcelSortOrder} />
+                    </th>
+                    <th onClick={() => handleParcelSort('shipper_name')} style={{ cursor: 'pointer' }}>
+                      SHIPPER <SortIcon field="shipper_name" currentField={parcelSortField} order={parcelSortOrder} />
+                    </th>
+                    <th onClick={() => handleParcelSort('status')} style={{ cursor: 'pointer' }}>
+                      TRẠNG THÁI <SortIcon field="status" currentField={parcelSortField} order={parcelSortOrder} />
+                    </th>
+                    <th onClick={() => handleParcelSort('stock_since')} style={{ cursor: 'pointer' }}>
+                      BẮT ĐẦU TỒN <SortIcon field="stock_since" currentField={parcelSortField} order={parcelSortOrder} />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {jt.parcelsLoading ? (
                     <tr><td colSpan="5" className="empty">Đang tải dữ liệu…</td></tr>
-                  ) : jt.parcels.length === 0 ? (
+                  ) : sortedParcels.length === 0 ? (
                     <tr><td colSpan="5" className="empty">Không có đơn nào phù hợp.</td></tr>
                   ) : (
-                    jt.parcels.map((p) => (
+                    sortedParcels.map((p) => (
                       <tr key={p.waybill} className="customer-row">
                         <td><strong>{p.waybill}</strong></td>
                         <td><DaysBadge days={p.days_in_stock} thresholds={thresholds} /></td>

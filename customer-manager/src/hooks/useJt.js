@@ -1,15 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '../services/api';
-import { useVerification } from './useVerification';
+import { useVerification } from '../context/VerificationContext';
 
 export function useJt() {
   const { clearVerification } = useVerification();
-  const [minDays, setMinDays] = useState(2);
+  const [minDays, setMinDays] = useState(3); // Mặc định lọc từ 3 ngày
   const [view, setView] = useState('shippers'); // 'shippers' | 'parcels'
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [error, setError] = useState('');
-
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -54,7 +53,6 @@ export function useJt() {
 
   useEffect(() => { loadSummary(); }, [loadSummary]);
   useEffect(() => { if (view === 'parcels') loadParcels(); }, [view, loadParcels]);
-
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 350);
     return () => clearTimeout(t);
@@ -62,6 +60,7 @@ export function useJt() {
 
   const changeMinDays = useCallback((n) => { setMinDays(n); setPage(1); }, []);
   const changeLimit = useCallback((n) => { setLimit(n); setPage(1); }, []);
+
   const reload = useCallback(async () => {
     await loadSummary();
     if (view === 'parcels') await loadParcels();
