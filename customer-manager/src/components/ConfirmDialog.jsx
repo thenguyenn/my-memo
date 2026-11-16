@@ -36,25 +36,10 @@ export function ConfirmDialog({
 
   if (!isOpen) return null;
 
-  const getIcon = () => {
-    switch (type) {
-      case 'warning':
-        return '⚠️';
-      case 'success':
-        return '✅';
-      case 'alert':
-        return 'ℹ️';
-      default:
-        return '❓';
-    }
-  };
-
   return (
     <div className="dialog-overlay" onClick={onCancel}>
       <div className="dialog-container" onClick={e => e.stopPropagation()}>
         <div className={`dialog-content dialog-${type}`}>
-          <div className="dialog-icon">{getIcon()}</div>
-          
           {title && <h3 className="dialog-title">{title}</h3>}
           
           <div className="dialog-message">

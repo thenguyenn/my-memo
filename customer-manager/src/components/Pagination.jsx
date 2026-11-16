@@ -19,14 +19,14 @@ export function Pagination({ page, totalPages, count, limit, loading, onPageChan
           disabled={page <= 1 || loading} 
           onClick={() => onPageChange(page - 1)}
         >
-          ← Trước
+          Trước
         </button>
         <button 
           className="ghost" 
           disabled={page >= totalPages || loading} 
           onClick={() => onPageChange(page + 1)}
         >
-          Sau →
+          Sau
         </button>
       </div>
     </div>

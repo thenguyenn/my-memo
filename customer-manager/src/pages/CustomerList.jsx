@@ -107,16 +107,16 @@ export function CustomerList() {
     try {
       if (editing) {
         await updateCustomer(editing.id, formData);
-        setNotice('✅ Đã cập nhật thông tin khách hàng thành công');
+        setNotice('Đã cập nhật thông tin khách hàng thành công');
         closeForm(); // Đóng form khi cập nhật
       } else {
         await createCustomer(formData);
-        setNotice('✅ Đã thêm khách hàng mới thành công');
+        setNotice('Đã thêm khách hàng mới thành công');
         // Không đóng form, chỉ clear form để thêm tiếp
         setEditing(null);
       }
     } catch (err) {
-      setNotice('❌ ' + err.message);
+      setNotice('Lỗi: ' + err.message);
     } finally {
       setSaveLoading(false);
     }
@@ -125,7 +125,7 @@ export function CustomerList() {
   const handleDelete = async (customer) => {
     requireVerification(async () => {
       const confirmed = await confirm({
-        title: '⚠️ Xác nhận xóa khách hàng',
+        title: 'Xác nhận xóa khách hàng',
         message: `Tên: ${customer.name}\nSĐT: ${customer.phone}\n\nBạn có chắc chắn muốn xóa?`,
         confirmText: 'Xóa',
         cancelText: 'Hủy',
@@ -136,9 +136,9 @@ export function CustomerList() {
 
       try {
         await deleteCustomer(customer.id);
-        setNotice('✅ Đã xóa khách hàng thành công');
+        setNotice('Đã xóa khách hàng thành công');
       } catch (err) {
-        setNotice('❌ ' + err.message);
+        setNotice('Lỗi: ' + err.message);
       }
     });
   };
@@ -172,14 +172,14 @@ export function CustomerList() {
 
     try {
       const result = await importAllContacts((current, total) => {
-        setNotice(`⏳ Đang import: ${current}/${total}...`);
+        setNotice(`Đang import: ${current}/${total}…`);
       });
 
       closeImport();
       await reload();
       
       await alert({
-        title: '✅ Import thành công',
+        title: 'Import thành công',
         message: `Đã import ${result.success} khách hàng thành công${result.failed > 0 ? `\n${result.failed} khách hàng bị lỗi` : ''}`,
         confirmText: 'OK',
         type: 'success'
@@ -187,14 +187,14 @@ export function CustomerList() {
       
       setNotice('');
     } catch (err) {
-      setNotice('❌ ' + err.message);
+      setNotice('Lỗi: ' + err.message);
     }
   };
 
   const handleFileSelect = (file) => {
     handleFileUpload(file);
     if (!importError) {
-      setNotice(`✅ Đã phân tích ${importData.length} liên hệ từ file ${file.name}`);
+      setNotice(`Đã phân tích ${importData.length} liên hệ từ file ${file.name}`);
     }
   };
 
@@ -221,40 +221,16 @@ export function CustomerList() {
           <p className="muted">Quản lý thông tin khách hàng tập trung trên nền tảng trực tuyến.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* Verification Badge */}
-          {/* <div 
-            className={`verification-badge ${isVerified ? 'verified' : 'unverified'}`}
-            onClick={() => isVerified ? clearVerification() : requireVerification(() => {})}
-            title={isVerified ? 'Click để đăng xuất' : 'Chưa xác minh'}
-          >
-            {isVerified ? (
-              <>
-                <span>✓</span>
-                <span>Đã xác minh</span>
-              </>
-            ) : (
-              <>
-                <span>🔒</span>
-                <span>Chưa xác minh</span>
-              </>
-            )}
-          </div> */}
           
-          <button 
-            className="ghost" 
-            onClick={openImport} 
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <span>📁</span> Import danh bạ
-          </button>
+          <button className="ghost" onClick={openImport}>Import danh bạ</button>
           <button className="primary" onClick={openAdd}>
-            ＋ Thêm khách hàng
+            Thêm khách hàng
           </button>
         </div>
       </section>
 
       {notice && (
-        <div className={`notice ${notice.includes('❌') || notice.includes('không') ? 'error' : 'success'}`}>
+        <div className={`notice ${notice.startsWith('Lỗi') ? 'error' : 'success'}`}>
           {notice}
         </div>
       )}
@@ -266,7 +242,7 @@ export function CustomerList() {
           onFileUpload={handleFileSelect}
           onImport={handleImport}
           onClose={closeImport}
-          onProgressUpdate={(current, total) => setNotice(`⏳ Đang import: ${current}/${total}...`)}
+          onProgressUpdate={(current, total) => setNotice(`Đang import: ${current}/${total}…`)}
         />
       )}
 

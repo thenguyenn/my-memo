@@ -10,8 +10,8 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
   return (
     <div className="panel import-panel">
       <div className="panel-title">
-        <h2>📁 Import</h2>
-        <button type="button" className="icon-button" onClick={onClose}>✕</button>
+        <h2>Import danh bạ</h2>
+        <button type="button" className="icon-button" onClick={onClose}>Đóng</button>
       </div>
       
 
@@ -27,7 +27,6 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
           className="upload-button"
           onClick={() => fileInputRef.current?.click()}
         >
-          <span style={{ fontSize: '32px' }}>📤</span>
           <span>Chọn file để import</span>
           <small>.txt, .json, .xlsx, .xls</small>
         </label>
@@ -36,7 +35,7 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
       {importData.length > 0 && (
         <>
           <div className="import-preview">
-            <h3>👀 Preview {importData.length} khách hàng:</h3>
+            <h3>Xem trước {importData.length} khách hàng:</h3>
             <div className="preview-table-scroll">
               <table className="preview-table">
                 <thead>
@@ -74,7 +73,7 @@ export function ImportModal({ importData, importing, onFileUpload, onImport, onC
               onClick={handleImport}
               disabled={importing}
             >
-              {importing ? '⏳ Đang import...' : `✅ Import ${importData.length} khách hàng`}
+              {importing ? 'Đang import…' : `Import ${importData.length} khách hàng`}
             </button>
           </div>
         </>

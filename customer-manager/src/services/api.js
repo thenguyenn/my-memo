@@ -26,19 +26,6 @@ export const api = {
     return this.request('/api/verify', { method: 'POST', body: JSON.stringify({ code }) });
   },
 
-  // ---- Soát hàng J&T ----
-  async jtSummary(params) {
-    return this.request(`/api/jt/summary?${new URLSearchParams(params)}`);
-  },
-
-  async jtParcels(params) {
-    return this.request(`/api/jt/parcels?${new URLSearchParams(params)}`);
-  },
-
-  async jtImport(rows, snapshot) {
-    return this.request('/api/jt/import', { method: 'POST', body: JSON.stringify({ rows, snapshot }) });
-  },
-
   async getCustomers(params) {
     const query = new URLSearchParams(params);
     return this.request(`${API_BASE}?${query}`);

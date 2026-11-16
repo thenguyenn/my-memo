@@ -27,7 +27,7 @@ export function CustomerForm({ customer, onSave, onCancel, loading }) {
     <form className="panel form-panel" onSubmit={handleSubmit}>
       <div className="panel-title">
         <h2>{customer ? 'Cập nhật khách hàng' : 'Thêm khách hàng mới'}</h2>
-        <button type="button" className="icon-button" onClick={onCancel}>✕</button>
+        <button type="button" className="icon-button" onClick={onCancel}>Đóng</button>
       </div>
       
       <div className="form-grid">

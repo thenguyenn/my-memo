@@ -38,7 +38,7 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
     
     if (!success) {
       // Nếu sai, hiện lỗi trong modal
-      setError('❌ Mã xác minh không chính xác. Vui lòng thử lại.');
+      setError('Mã xác minh không chính xác. Vui lòng thử lại.');
       setIsVerifying(false);
       setCode(''); // Clear input
       inputRef.current?.focus();
@@ -58,7 +58,6 @@ export function VerificationModal({ isOpen, onVerify, onCancel }) {
     <div className="dialog-overlay" onClick={onCancel}>
       <div className="verification-modal" onClick={e => e.stopPropagation()}>
         <div className="verification-content">
-          <div className="verification-icon">🔐</div>
           
           <h2 className="verification-title">Xác minh quyền truy cập</h2>
           <p className="verification-description">
