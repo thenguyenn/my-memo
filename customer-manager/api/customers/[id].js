@@ -1,10 +1,12 @@
-import { db, send, validCustomer } from '../../lib/api-utils.js';
+import { db, requireAuth, send, validCustomer } from '../../lib/api-core.js';
 
 export default async function handler(req, res) {
   if (!['PUT', 'DELETE'].includes(req.method)) {
     res.setHeader('Allow', 'PUT, DELETE');
     return send(res, 405, { error: 'Method not allowed' });
   }
+  const user = requireAuth(req, res);
+  if (!user) return;
   const id = String(req.query.id || '');
   if (!/^[0-9a-f-]{36}$/i.test(id)) return send(res, 400, { error: 'Mã khách hàng không hợp lệ.' });
 

@@ -198,17 +198,17 @@ const dash = (v) => (v === '' || v === null || v === undefined ? '—' : v);
 const nowrap = { whiteSpace: 'nowrap' };
 
 const COLS = [
-  { key: 'maVanDon',            label: 'MÃ VẬN ĐƠN',                    render: (r) => <strong className="sd-code">{r.maVanDon}</strong> },
-  { key: 'soNgayLuuTru',        label: 'SỐ NGÀY LƯU KHO',               center: true, render: (r) => dash(r.soNgayLuuTru) },
-  { key: 'tenNhanVienPhatHang', label: 'NHÂN VIÊN PHÁT KIỆN',           render: (r) => dash(r.tenNhanVienPhatHang) },
-  { key: 'nguoiNhan',           label: 'NGƯỜI NHẬN',                    render: (r) => dash(r.nguoiNhan) },
-  { key: 'diaChi',              label: 'ĐỊA CHỈ',                       nosort: true,
+  { key: 'maVanDon',            label: 'MÃ VẬN ĐƠN',                    width: '11%', render: (r) => <strong className="sd-code">{r.maVanDon}</strong> },
+  { key: 'soNgayLuuTru',        label: 'SỐ NGÀY LƯU KHO',               width: '9%',  center: true, render: (r) => dash(r.soNgayLuuTru) },
+  { key: 'tenNhanVienPhatHang', label: 'NHÂN VIÊN PHÁT KIỆN',           width: '12%', render: (r) => dash(r.tenNhanVienPhatHang) },
+  { key: 'nguoiNhan',           label: 'NGƯỜI NHẬN',                    width: '10%', render: (r) => dash(r.nguoiNhan) },
+  { key: 'diaChi',              label: 'ĐỊA CHỈ',                       width: '15%', nosort: true,
     render: (r) => <span className="sd-addr" title={r.diaChi}>{dash(r.diaChi)}</span> },
-  { key: 'thoiGianKienVanDe',   label: 'THỜI GIAN KIỆN VẤN ĐỀ',         render: (r) => <span style={nowrap}>{dash(r.thoiGianKienVanDe)}</span> },
-  { key: 'loaiKienVanDe',       label: 'LOẠI KIỆN VẤN ĐỀ',              render: (r) => (r.loaiKienVanDe
+  { key: 'thoiGianKienVanDe',   label: 'THỜI GIAN KIỆN VẤN ĐỀ',         width: '11%', render: (r) => <span style={nowrap}>{dash(r.thoiGianKienVanDe)}</span> },
+  { key: 'loaiKienVanDe',       label: 'LOẠI KIỆN VẤN ĐỀ',              width: '10%', render: (r) => (r.loaiKienVanDe
       ? <span className="sd-badge sd-badge-orange" title={r.phanLoaiKienVanDe}>{r.loaiKienVanDe}</span> : '—') },
-  { key: 'thoiGianThaoTac',     label: 'THỜI GIAN THAO TÁC CUỐI CÙNG',  render: (r) => <span style={nowrap}>{dash(r.thoiGianThaoTac)}</span> },
-  { key: 'loaiQuetKienCuoi',    label: 'LOẠI QUÉT KIỆN CUỐI CÙNG',      render: (r) => dash(r.loaiQuetKienCuoi) },
+  { key: 'thoiGianThaoTac',     label: 'THỜI GIAN THAO TÁC CUỐI CÙNG',  width: '12%', render: (r) => <span style={nowrap}>{dash(r.thoiGianThaoTac)}</span> },
+  { key: 'loaiQuetKienCuoi',    label: 'LOẠI QUÉT KIỆN CUỐI CÙNG',      width: '10%', render: (r) => dash(r.loaiQuetKienCuoi) },
 ];
 
 export function SoatDon() {
@@ -504,6 +504,7 @@ export function SoatDon() {
                 {COLS.map((c) => (
                   <th
                     key={c.key}
+                    style={{ width: c.width }}
                     className={`${c.nosort ? '' : 'sd-th-sort'}${c.center ? ' sd-center' : ''}`}
                     onClick={c.nosort ? undefined : () => handleSort(c.key)}
                   >

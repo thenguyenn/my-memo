@@ -302,11 +302,6 @@ export function CustomerList() {
       <footer>Thông tin khách hàng được lưu trên cơ sở dữ liệu trực tuyến.</footer>
 
       <ConfirmDialog {...dialogState} />
-      <VerificationModal 
-        isOpen={showVerifyModal}
-        onVerify={handleVerify}
-        onCancel={cancelVerification}
-      />
     </main>
   );
 }

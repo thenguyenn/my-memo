@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: 'customers', to: '/', label: 'Khách hàng', end: true },
   { id: 'soat-hang', to: '/soat-hang', label: 'Soát hàng' },
   { id: 'bao-cao-cuoi-ngay', to: '/bao-cao-cuoi-ngay', label: 'Báo cáo cuối ngày' },
+  { id: 'nguoi-dung', to: '/nguoi-dung', label: 'Người dùng', ownerOnly: true },
 ];
 const ORDER_KEY = 'nav-order-v1';
 
@@ -22,14 +23,23 @@ function loadOrder() {
 }
 
 export function Layout() {
-  const { isVerified, showVerifyModal, verify, requireVerification, cancelVerification, clearVerification } =
-    useVerification();
+  const {
+    user,
+    isVerified,
+    showVerifyModal,
+    verify,
+    requireVerification,
+    cancelVerification,
+    clearVerification,
+  } = useVerification();
 
   const [order, setOrder] = useState(loadOrder);
   const [dragId, setDragId] = useState(null);
   const [overId, setOverId] = useState(null);
 
-  const items = order.map((id) => NAV_ITEMS.find((n) => n.id === id)).filter(Boolean);
+  const items = order
+    .map((id) => NAV_ITEMS.find((n) => n.id === id))
+    .filter((n) => n && (!n.ownerOnly || user?.isOwner));
 
   const move = (fromId, toId) => {
     if (!fromId || fromId === toId) return;
@@ -74,14 +84,21 @@ export function Layout() {
             )}
           </div>
 
-          <button
-            type="button"
-            className={`verification-badge ${isVerified ? 'verified' : 'unverified'}`}
-            onClick={() => (isVerified ? clearVerification() : requireVerification(() => {}))}
-            title={isVerified ? 'Bấm để đăng xuất' : 'Bấm để xác minh'}
-          >
-            {isVerified ? 'Đã xác minh' : 'Chưa xác minh'}
-          </button>
+          <div className="topbar-right">
+            {isVerified && user && (
+              <span className="topbar-user" title={user.email}>
+                {user.name || user.email}
+              </span>
+            )}
+            <button
+              type="button"
+              className={`verification-badge ${isVerified ? 'verified' : 'unverified'}`}
+              onClick={() => (isVerified ? clearVerification() : requireVerification(() => {}))}
+              title={isVerified ? 'Bấm để đăng xuất' : 'Bấm để đăng nhập bằng Google'}
+            >
+              {isVerified ? 'Đăng xuất' : 'Đăng nhập Google'}
+            </button>
+          </div>
         </div>
       </header>
 

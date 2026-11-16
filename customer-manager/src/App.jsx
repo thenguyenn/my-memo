@@ -5,19 +5,48 @@ import { Layout } from './components/Layout';
 import { CustomerList } from './pages/CustomerList';
 import { SoatDon } from './pages/SoatDon';
 import { BaoCaoCuoiNgay } from './pages/BaoCaoCuoiNgay';
+import { UserManagement } from './pages/UserManagement';
 
 function RequireVerified({ children }) {
-  const { isVerified, requireVerification } = useVerification();
+  const { isVerified, authLoading, requireVerification } = useVerification();
+  if (authLoading) return null;
   if (isVerified) return children;
   return (
     <main className="app-shell">
       <section className="panel gate">
-        <h2>Cần xác minh để xem trang này</h2>
-        <p className="muted">Nhập mã xác minh để mở chức năng soát hàng.</p>
-        <button className="primary" onClick={() => requireVerification(() => {})}>Nhập mã xác minh</button>
+        <h2>Cần đăng nhập để sử dụng chức năng này</h2>
+        <p className="muted">Vui lòng đăng nhập bằng tài khoản Google để truy cập toàn bộ chức năng.</p>
+        <button className="primary" onClick={() => requireVerification(() => {})}>Đăng nhập bằng Google</button>
       </section>
     </main>
   );
+}
+
+function RequireOwner({ children }) {
+  const { user, isVerified, authLoading, requireVerification } = useVerification();
+  if (authLoading) return null;
+  if (!isVerified) {
+    return (
+      <main className="app-shell">
+        <section className="panel gate">
+          <h2>Cần đăng nhập tài khoản Chủ trang web</h2>
+          <p className="muted">Chỉ chủ trang web (nguyenbathe2711@gmail.com) mới có quyền quản lý người dùng.</p>
+          <button className="primary" onClick={() => requireVerification(() => {})}>Đăng nhập bằng Google</button>
+        </section>
+      </main>
+    );
+  }
+  if (!user?.isOwner) {
+    return (
+      <main className="app-shell">
+        <section className="panel gate">
+          <h2>Không có quyền truy cập</h2>
+          <p className="muted">Trang này chỉ dành cho chủ trang web (nguyenbathe2711@gmail.com).</p>
+        </section>
+      </main>
+    );
+  }
+  return children;
 }
 
 export default function App() {
@@ -29,6 +58,7 @@ export default function App() {
             <Route path="/" element={<CustomerList />} />
             <Route path="/soat-hang" element={<RequireVerified><SoatDon /></RequireVerified>} />
             <Route path="/bao-cao-cuoi-ngay" element={<RequireVerified><BaoCaoCuoiNgay /></RequireVerified>} />
+            <Route path="/nguoi-dung" element={<RequireOwner><UserManagement /></RequireOwner>} />
             <Route path="/soat-don" element={<Navigate to="/soat-hang" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

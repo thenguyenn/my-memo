@@ -1,69 +1,78 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { api, TOKEN_KEY } from '../services/api';
-
-const STORAGE_KEY = 'customer_manager_verified';
-const EXPIRY_KEY = 'customer_manager_verified_expiry';
+import { api, clearAccessToken } from '../services/api';
 
 const VerificationContext = createContext(null);
 
 export function VerificationProvider({ children }) {
-  const [isVerified, setIsVerified] = useState(false);
+  const [user, setUser] = useState(null);
+  const [googleClientId, setGoogleClientId] = useState(
+    () => (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim()
+  );
+  const [authLoading, setAuthLoading] = useState(true);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const pendingRef = useRef(null);
 
-  const clearVerification = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(EXPIRY_KEY);
-    localStorage.removeItem(TOKEN_KEY);
-    setIsVerified(false);
+  const isVerified = !!user;
+
+  // Khôi phục phiên đăng nhập từ HttpOnly refreshToken cookie (không lưu localStorage)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const session = await api.refreshSession();
+        if (mounted) {
+          if (session?.googleClientId) {
+            setGoogleClientId(session.googleClientId);
+          }
+          if (session?.user) {
+            setUser(session.user);
+          }
+        }
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Khôi phục phiên đã xác minh (cần cả cờ, hạn dùng và token do server cấp)
+  // Làm mới accessToken định kỳ trong bộ nhớ trước khi hết hạn (12 phút/lần)
   useEffect(() => {
-    const expiry = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
-    const ok =
-      localStorage.getItem(STORAGE_KEY) === 'true' &&
-      localStorage.getItem(TOKEN_KEY) &&
-      Date.now() < expiry;
-    if (ok) setIsVerified(true);
-    else clearVerification();
-  }, [clearVerification]);
-
-  // Mã được kiểm tra trên client-side với biến env
-  const verify = useCallback(async (code) => {
-    try {
-      // Lấy mã xác minh từ environment variable
-      const correctCode = import.meta.env.VITE_VERIFY_CODE || '271104';
-      
-      if (code === correctCode) {
-        // Tạo token và thời gian hết hạn
-        const token = `verified_${Date.now()}`;
-        const expiresAt = Date.now() + (8 * 60 * 60 * 1000); // 8 giờ
-        
-        localStorage.setItem(STORAGE_KEY, 'true');
-        localStorage.setItem(EXPIRY_KEY, String(expiresAt));
-        localStorage.setItem(TOKEN_KEY, token);
-        setIsVerified(true);
-        setShowVerifyModal(false);
-        const action = pendingRef.current;
-        pendingRef.current = null;
-        if (action) action();
-        return true;
+    if (!isVerified) return undefined;
+    const timer = setInterval(async () => {
+      const session = await api.refreshSession();
+      if (session?.user) {
+        setUser(session.user);
       } else {
-        return false;
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Verification error:', error);
-      return false;
-    }
+    }, 12 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, [isVerified]);
+
+  const loginWithGoogle = useCallback(async (payload) => {
+    const data = await api.loginWithGoogle(payload);
+    setUser(data.user || null);
+    setShowVerifyModal(false);
+    const action = pendingRef.current;
+    pendingRef.current = null;
+    if (action) action();
+    return data;
+  }, []);
+
+  const clearVerification = useCallback(async () => {
+    clearAccessToken();
+    setUser(null);
+    await api.logout();
   }, []);
 
   const requireVerification = useCallback(
     (action) => {
       if (isVerified) {
-        action();
+        if (typeof action === 'function') action();
       } else {
-        pendingRef.current = action;
+        pendingRef.current = typeof action === 'function' ? action : null;
         setShowVerifyModal(true);
       }
     },
@@ -76,9 +85,13 @@ export function VerificationProvider({ children }) {
   }, []);
 
   const value = {
+    user,
+    googleClientId,
     isVerified,
+    authLoading,
     showVerifyModal,
-    verify,
+    loginWithGoogle,
+    verify: loginWithGoogle,
     requireVerification,
     cancelVerification,
     clearVerification,

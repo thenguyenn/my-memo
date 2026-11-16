@@ -1,4 +1,4 @@
-import { db, send, validCustomer } from '../../lib/api-utils.js';
+import { db, requireAuth, send, validCustomer } from '../../lib/api-core.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -31,6 +31,9 @@ export default async function handler(req, res) {
       if (error) throw error;
       return send(res, 200, { data, count, page, limit });
     }
+
+    const user = requireAuth(req, res);
+    if (!user) return;
 
     const parsed = validCustomer(req.body);
     if (parsed.error) return send(res, 400, { error: parsed.error });
