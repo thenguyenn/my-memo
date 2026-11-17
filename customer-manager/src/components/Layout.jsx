@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: 'customers', to: '/', label: 'Khách hàng', end: true },
   { id: 'soat-hang', to: '/soat-hang', label: 'Soát hàng' },
   { id: 'bao-cao-cuoi-ngay', to: '/bao-cao-cuoi-ngay', label: 'Báo cáo cuối ngày' },
+  { id: 'care-don', to: '/care-don', label: 'Care đơn' },
   { id: 'nguoi-dung', to: '/nguoi-dung', label: 'Người dùng', ownerOnly: true },
 ];
 const ORDER_KEY = 'nav-order-v1';

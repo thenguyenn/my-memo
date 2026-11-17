@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { CustomerList } from './pages/CustomerList';
 import { SoatDon } from './pages/SoatDon';
 import { BaoCaoCuoiNgay } from './pages/BaoCaoCuoiNgay';
+import { CareDon } from './pages/CareDon';
 import { UserManagement } from './pages/UserManagement';
 
 function RequireVerified({ children }) {
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/" element={<CustomerList />} />
             <Route path="/soat-hang" element={<RequireVerified><SoatDon /></RequireVerified>} />
             <Route path="/bao-cao-cuoi-ngay" element={<RequireVerified><BaoCaoCuoiNgay /></RequireVerified>} />
+            <Route path="/care-don" element={<RequireVerified><CareDon /></RequireVerified>} />
             <Route path="/nguoi-dung" element={<RequireOwner><UserManagement /></RequireOwner>} />
             <Route path="/soat-don" element={<Navigate to="/soat-hang" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
