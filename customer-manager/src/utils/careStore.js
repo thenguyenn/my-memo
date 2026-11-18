@@ -125,3 +125,4 @@ export function createHistoryStore(dbName, storeName = 'runs') {
 // Kho lịch sử mặc định cho các trang
 export const careHistory = createHistoryStore('care-don-history');
 export const baoCaoHistory = createHistoryStore('bao-cao-cuoi-ngay-history');
+export const chay24hHistory = createHistoryStore('chay-24h-history');

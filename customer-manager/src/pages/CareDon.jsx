@@ -687,7 +687,7 @@ export function CareDon() {
       // Chuẩn hóa Loại kiện vấn đề từ câu mô tả nếu chưa tách
       let cleanLoaiKienVD = r.loaiKienVanDe || '';
       if (!cleanLoaiKienVD && moTaTrangThai) {
-        const mReason = moTaTrangThai.match(/Nguyên nhân[^【]*【([^】]+)】/i);
+        const mReason = moTaTrangThai.match(/Nguyên nhân\s*kiện vấn đề[^【]*【([^】]+)】/i);
         if (mReason) cleanLoaiKienVD = mReason[1].trim();
       }
 
@@ -710,6 +710,7 @@ export function CareDon() {
 
       const normalizedRow = {
         ...r,
+        diaChi: r._addrV2 ? (r.diaChi || '') : '',
         trangThai: cleanTrangThai,
         moTaTrangThai,
         dangO: cleanDangO,

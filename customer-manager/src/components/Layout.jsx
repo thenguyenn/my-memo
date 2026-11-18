@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { id: 'soat-hang', to: '/soat-hang', label: 'Soát hàng' },
   { id: 'bao-cao-cuoi-ngay', to: '/bao-cao-cuoi-ngay', label: 'Báo cáo cuối ngày' },
   { id: 'care-don', to: '/care-don', label: 'Care đơn' },
+  { id: 'chay-24h', to: '/chay-24h', label: 'Chạy 24h' },
   { id: 'nguoi-dung', to: '/nguoi-dung', label: 'Người dùng', ownerOnly: true },
 ];
 const ORDER_KEY = 'nav-order-v1';

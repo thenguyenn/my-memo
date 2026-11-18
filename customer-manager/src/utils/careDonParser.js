@@ -292,16 +292,32 @@ export function computeAutoCareDetail(row) {
     return { detail: chiTietGoc, tone: 'green', autoStatus: 'processing' };
   }
 
-  // 2. Kiểm tra chuyển hoàn / đang hoàn về
+  const statusText = normText(`${trangThai} ${loaiQuet}`);
+  const isDangKyChuyenHoan =
+    statusText.includes('dang ky chuyen hoan') ||
+    statusText.includes('dang ky ch') ||
+    (!statusText.includes('dang chuyen hoan') && combined.includes('dang ky chuyen hoan'));
+
+  // 2. Kiểm tra đang chuyển hoàn / đang hoàn về
+  // ("Đăng ký chuyển hoàn" chỉ mới đăng ký, KHÔNG phải "Đang Hoàn về";
+  //  khi trạng thái là "Đang chuyển hoàn" hoặc đã xác nhận chuyển hoàn mới là "Đang Hoàn về")
   if (
-    xnHoan === 'co' ||
-    xnHoan === 'y' ||
-    xnHoan.includes('chuyenhoan') ||
-    combined.includes('chuyen hoan') ||
-    combined.includes('hoan ve') ||
-    combined.includes('dang hoan')
+    !isDangKyChuyenHoan &&
+    (statusText.includes('dang chuyen hoan') ||
+      statusText.includes('dang hoan') ||
+      statusText.includes('hoan ve') ||
+      xnHoan === 'co' ||
+      xnHoan === 'y' ||
+      xnHoan.includes('chuyenhoan') ||
+      combined.includes('dang chuyen hoan') ||
+      combined.includes('hoan ve') ||
+      combined.includes('dang hoan'))
   ) {
     return { detail: 'Đang Hoàn về', tone: 'orange', autoStatus: 'processing' };
+  }
+
+  if (isDangKyChuyenHoan) {
+    return { detail: '', tone: '', autoStatus: 'pending' };
   }
 
   // 3. Kiểm tra giao lại / tích phát lại
@@ -465,7 +481,7 @@ export async function parseCareDon(fileQuanLy, fileTrangThai) {
     const xnChuyenHoan = txt(pick(s, ['xacnhanchuyenhoan', 'cophaidonch']) || pick(a, ['xacnhanchuyenhoan']));
     let loaiKienVanDe = txt(pick(s, ['loaikienvande', 'loaikienvd'], ['phanloai']) || pick(a, ['loaikienvande'], ['phanloai']));
     if (!loaiKienVanDe && moTaTrangThai) {
-      const mReason = moTaTrangThai.match(/Nguyên nhân[^【]*【([^】]+)】/i);
+      const mReason = moTaTrangThai.match(/Nguyên nhân\s*kiện vấn đề[^【]*【([^】]+)】/i);
       if (mReason) loaiKienVanDe = mReason[1].trim();
     }
     const phanLoaiKienVanDe = txt(pick(s, ['phanloaikienvande', 'phanloaikienvd']) || pick(a, ['phanloaikienvande']));
@@ -483,7 +499,17 @@ export async function parseCareDon(fileQuanLy, fileTrangThai) {
       pick(s, ['tennguoinhan', 'nguoinhan'], ['sdt', 'dienthoai', 'diachi'])
     );
     const sdtNguoiNhan = txt(pick(a, ['sodienthoainguoinhan', 'sdtnguoinhan', 'dienthoainguoinhan', 'sdtnhan']) || pick(s, ['sodienthoainguoinhan', 'sdtnguoinhan']));
-    const diaChi = txt(pick(a, ['diachinguoinhan', 'diachinhan', 'diachichitiet', 'diachi']) || pick(s, ['diachinguoinhan', 'diachichitiet']));
+    const ADDR_EXCLUDE = ['diachilay', 'layhang', 'nguoigui', 'guihang', 'xuatphat', 'buucucgui', 'khachhang'];
+    const rawDiaChiNhan = txt(
+      pick(a, ['diachichitietnoinhanhang', 'diachinguoinhan', 'diachinoinhan', 'diachinhan', 'diachigiao', 'diachiphat', 'diachichitiet'], ADDR_EXCLUDE) ||
+      pick(s, ['diachichitietnoinhanhang', 'diachinguoinhan', 'diachinoinhan', 'diachinhan', 'diachigiao', 'diachiphat', 'diachichitiet'], ADDR_EXCLUDE)
+    );
+    const rawDichDen = txt(pick(a, ['dichden', 'noidungdichden', 'tinhthanhnhan', 'quanhuyennhan'], ADDR_EXCLUDE) || pick(s, ['dichden'], ADDR_EXCLUDE));
+    const cleanDichDen = rawDichDen.replace(/\s*-\s*[0-9a-z]{5,14}$/i, '').trim();
+    const buuCucPhat = txt(pick(a, ['tenbuucucphat', 'buucucphat'], ['ma']) || pick(s, ['tenbuucucphat', 'buucucphat'], ['ma']));
+    const diaChi =
+      rawDiaChiNhan ||
+      [cleanDichDen, !isPureBranchCode(buuCucPhat) ? buuCucPhat : ''].filter(Boolean).join(' · ');
     const nguoiThaoTac = txt(pick(s, ['nguoithaotac', 'nhanvienphat', 'tennhanvienphathang']) || pick(a, ['nhanvienphat', 'nguoiphutrach']));
 
     const baseRow = {
@@ -492,6 +518,7 @@ export async function parseCareDon(fileQuanLy, fileTrangThai) {
       tenNguoiNhan,
       sdtNguoiNhan,
       diaChi,
+      _addrV2: true,
       thoiGianQuetDen,
       soNgayLuuKho,
       tenHang,

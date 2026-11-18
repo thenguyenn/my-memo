@@ -655,6 +655,9 @@ table.bc-table tbody tr.sd-row:hover td.bc-rate-low {
   gap: 12px 14px;
   align-items: end;
 }
+.chay24h-filter-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
 .care-filter-foot {
   display: flex;
   align-items: center;
@@ -686,6 +689,15 @@ table.care-sheet-table th.care-th-num .sd-th-inner { justify-content: flex-end; 
 table.care-sheet-table th:nth-child(7) { width: 145px; } /* Trạng thái */
 table.care-sheet-table th:nth-child(8) { width: 175px; } /* Đang ở */
 table.care-sheet-table th:nth-child(9) { width: 185px; } /* Chi tiết */
+
+/* Bảng 6 cột chuẩn theo layout Chạy 24h */
+table.chay24h-table { min-width: 900px; }
+table.chay24h-table th:nth-child(1) { width: 150px; } /* MVĐ */
+table.chay24h-table th:nth-child(2) { width: 180px; } /* Tên shipper */
+table.chay24h-table th:nth-child(3) { width: 190px; } /* Tên sản phẩm */
+table.chay24h-table th:nth-child(4) { width: 130px; text-align: right; } /* COD */
+table.chay24h-table th:nth-child(5) { width: 170px; text-align: left; } /* Trạng thái */
+table.chay24h-table th:nth-child(6) { width: 210px; text-align: left; } /* Chi tiết */
 
 table.care-sheet-table tbody tr.care-sheet-row { cursor: pointer; }
 table.care-sheet-table td.care-col-code { font-weight: 700; color: #111827; font-family: var(--mono); }
