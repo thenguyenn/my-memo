@@ -12,7 +12,7 @@ import {
  *  File 1 - Giám sát tồn kho chi tiết:
  *    Mã vận đơn | Tên nhân viên phát hàng / Tên shipper | Tên người nhận | Tên sản phẩm / Tên hàng hóa |
  *    Số tiền COD | Thời gian hàng đến / Thời gian quét đến | Số ngày lưu trữ / lưu kho |
- *    Loại kiện vấn đề | Phân loại kiện vấn đề | Địa chỉ | SĐT ...
+ *    Thời gian kiện vấn đề | Loại kiện vấn đề | Phân loại kiện vấn đề | Thời gian thao tác cuối cùng ...
  *
  *  File 2 - Trạng thái MVĐ:
  *    Mã vận đơn | Trạng thái hiện tại | Loại quét kiện cuối cùng | Thời gian thao tác hiện tại |
@@ -21,9 +21,10 @@ import {
  *
  * Tự động xử lý:
  *  - Đối chiếu theo Mã vận đơn (MVĐ) giữa 2 file.
- *  - Tự động XÓA các dữ liệu của ngày hiện tại (các vận đơn có Thời gian hàng đến / Thời gian quét đến
- *    trùng với ngày hiện tại hoặc có Số ngày lưu trữ / lưu kho = 0).
- *  - Hiển thị 7 cột chuẩn: MVĐ | Tên shipper | Tên người nhận | Tên sản phẩm | COD | Trạng thái | Chi tiết.
+ *  - Tự động XÓA các dữ liệu của ngày hiện tại VÀ các đơn đã thao tác trong ngày hiện tại
+ *    (các vận đơn có Thời gian thao tác hiện tại / Thời gian thao tác cuối cùng / Thời gian kiện vấn đề /
+ *    Thời gian hàng đến / Thời gian quét đến trùng với ngày hiện tại, hoặc Số ngày lưu trữ = 0).
+ *  - Hiển thị 6 cột chuẩn: MVĐ | Tên shipper | Tên sản phẩm | COD | Trạng thái | Chi tiết.
  */
 
 const nk = (s) =>
@@ -117,6 +118,29 @@ function pickDate(src, aliases, exclude = []) {
   return '';
 }
 
+/** Lấy tất cả các giá trị ngày giờ khớp với danh sách cột thao tác từ 1 dòng dữ liệu */
+function pickAllDates(src, aliases, exclude = []) {
+  if (!src) return [];
+  const out = [];
+  for (const a of aliases) {
+    const v = src[a];
+    if (v !== undefined && String(v).trim() !== '' && parseExcelDate(v)) {
+      out.push(v);
+    }
+  }
+  for (const key of Object.keys(src)) {
+    if (exclude.some((x) => key.includes(x))) continue;
+    if (
+      aliases.some((a) => key.startsWith(a) || key.includes(a)) &&
+      String(src[key]).trim() !== '' &&
+      parseExcelDate(src[key])
+    ) {
+      out.push(src[key]);
+    }
+  }
+  return out;
+}
+
 const toNum = (v) => {
   if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
   const n = Number(String(v ?? '').replace(/[^\d.-]/g, ''));
@@ -168,6 +192,45 @@ const ARRIVAL_DATE_EXCLUDE = [
   'thaotac',
   'phathang',
   'songay',
+];
+
+const OPERATION_DATE_ALIASES = [
+  'thoigianthaotachientai',
+  'thoigianthaotaccuoicung',
+  'thoigianthaotaccuoi',
+  'thoigianthaotac',
+  'tgthaotachientai',
+  'tgthaotaccuoicung',
+  'tgthaotaccuoi',
+  'tgthaotac',
+  'ngaythaotac',
+  'thoigianquetkiencuoicung',
+  'thoigianquetcuoicung',
+  'thoigianquetcuoi',
+  'thoigianquetmoinhat',
+  'tgquetcuoi',
+  'tgquetmoinhat',
+  'thoigiancapnhat',
+  'ngaycapnhat',
+  'thoigiankienvande',
+  'thoigiankienvd',
+  'tgkienvande',
+  'tgkienvd',
+  'thoigianghinhankienvande',
+  'thoigiandangkykienvande',
+  'thoigiandangkychuyenhoan',
+  'thoigianchuyenhoan',
+  'thoigianphathang',
+  'thoigianquetphat',
+  'thoigiankynhan',
+];
+
+const OPERATION_DATE_EXCLUDE = [
+  'songay',
+  'taodon',
+  'guihang',
+  'ngaygui',
+  'thoigiangui',
 ];
 
 const SHIPPER_ALIASES = [
@@ -276,21 +339,33 @@ const COD_ALIASES = [
 const COD_EXCLUDE = ['phi', 'cuoc'];
 
 /**
- * Kiểm tra xem một dòng dữ liệu có thuộc ngày hiện tại hay không:
- *  1. Nếu có ngày hàng đến / quét đến (rawQuetDen): kiểm tra trùng ngày hiện tại (isCurrentDayDate)
- *  2. Nếu không có cột ngày hàng đến nhưng có cột Số ngày lưu trữ / lưu kho = 0 -> thuộc ngày hiện tại
+ * Kiểm tra xem một dòng dữ liệu có thuộc ngày hiện tại hoặc đã thao tác trong ngày hiện tại hay không:
+ *  1. Nếu bất kỳ mốc thời gian thao tác nào (Thời gian thao tác hiện tại / cuối cùng, Thời gian kiện vấn đề,
+ *     Thời gian quét cuối / mới nhất, Thời gian chuyển hoàn / ký nhận...) trùng với ngày hiện tại -> loại bỏ.
+ *  2. Nếu ngày hàng đến / quét đến (rawQuetDen) trùng với ngày hiện tại -> loại bỏ.
+ *  3. Nếu không có cột ngày hàng đến nhưng có cột Số ngày lưu trữ / lưu kho = 0 -> loại bỏ.
  */
-export function isRowFromCurrentDay(rawQuetDen, rawLuuKho, now = new Date()) {
+export function isRowFromCurrentDay(rawQuetDen, rawLuuKho, now = new Date(), ...operationDates) {
+  for (const opDate of operationDates) {
+    if (Array.isArray(opDate)) {
+      for (const d of opDate) {
+        if (d && isCurrentDayDate(d, now)) return true;
+      }
+    } else if (opDate && isCurrentDayDate(opDate, now)) {
+      return true;
+    }
+  }
   if (rawQuetDen && parseExcelDate(rawQuetDen)) {
-    return isCurrentDayDate(rawQuetDen, now);
+    if (isCurrentDayDate(rawQuetDen, now)) return true;
   }
   if (rawLuuKho !== '' && rawLuuKho !== null && rawLuuKho !== undefined) {
     if (parseExcelDate(rawLuuKho)) {
-      return isCurrentDayDate(rawLuuKho, now);
-    }
-    const n = parseFloat(String(rawLuuKho).trim());
-    if (!Number.isNaN(n) && Math.floor(n) === 0) {
-      return true;
+      if (isCurrentDayDate(rawLuuKho, now)) return true;
+    } else if (!rawQuetDen || !parseExcelDate(rawQuetDen)) {
+      const n = parseFloat(String(rawLuuKho).trim());
+      if (!Number.isNaN(n) && Math.floor(n) === 0) {
+        return true;
+      }
     }
   }
   return false;
@@ -365,8 +440,13 @@ export async function parseChay24h(fileTonKho, fileTrangThai) {
       pick(a, ['songayluutru', 'songayluukho', 'songayton', 'ngayluutru', 'ngayluukho', 'ngayton']) ||
       pick(s, ['songayluutru', 'songayluukho', 'songayton', 'ngayluutru', 'ngayluukho', 'ngayton']);
 
-    // Tự động xóa các dữ liệu của ngày hiện tại
-    if (isRowFromCurrentDay(rawQuetDen, rawLuuKho, now)) {
+    // Tập hợp tất cả thời gian thao tác từ cả 2 file (Thời gian thao tác hiện tại / cuối cùng, Thời gian kiện vấn đề, chuyển hoàn...)
+    const opDatesFromS = pickAllDates(s, OPERATION_DATE_ALIASES, OPERATION_DATE_EXCLUDE);
+    const opDatesFromA = pickAllDates(a, OPERATION_DATE_ALIASES, OPERATION_DATE_EXCLUDE);
+    const allOpDates = [...opDatesFromS, ...opDatesFromA];
+
+    // Tự động loại bỏ các đơn thuộc ngày hiện tại hoặc ĐÃ THAO TÁC trong ngày hiện tại
+    if (isRowFromCurrentDay(rawQuetDen, rawLuuKho, now, allOpDates)) {
       removedTodayCount++;
       continue;
     }
@@ -428,17 +508,16 @@ export async function parseChay24h(fileTonKho, fileTrangThai) {
 
     // Thời gian thao tác cuối
     const rawThaoTac =
-      pickDate(s, [
-        'thoigianthaotachientai',
-        'thoigianthaotaccuoicung',
-        'thoigianthaotac',
-        'thoigianquetcuoi',
-        'thoigianquetmoinhat',
-        'thoigiancapnhat',
-      ]) ||
-      pickDate(a, ['thoigianthaotaccuoicung', 'thoigianthaotac', 'thoigiancapnhat']) ||
+      opDatesFromS[0] ||
+      opDatesFromA[0] ||
       rawQuetDen;
     const thoiGianThaoTac = fmtExcelDate(rawThaoTac);
+
+    // Thời gian kiện vấn đề (lưu lại để kiểm tra hoặc hiển thị)
+    const rawKienVanDe =
+      pickDate(a, ['thoigiankienvande', 'thoigiankienvd', 'tgkienvande', 'tgkienvd']) ||
+      pickDate(s, ['thoigiankienvande', 'thoigiankienvd', 'tgkienvande', 'tgkienvd']);
+    const thoiGianKienVanDe = fmtExcelDate(rawKienVanDe);
 
     // Thông tin bổ sung phục vụ suy luận cột Chi tiết và mở modal xem chi tiết đơn
     const xnKyNhan = txt(pick(s, ['xacnhankynhan', 'daukynhan']) || pick(a, ['xacnhankynhan', 'daukynhan']));
@@ -507,6 +586,7 @@ export async function parseChay24h(fileTonKho, fileTrangThai) {
       soNgayLuuKho,
       chiTietFile,
       thoiGianThaoTac,
+      thoiGianKienVanDe,
       nguoiThaoTac: tenShipper,
       loaiQuetCuoi: loaiQuetCuoi || trangThai,
       loaiKienVanDe,
@@ -528,7 +608,7 @@ export async function parseChay24h(fileTonKho, fileTrangThai) {
   }
 
   if (removedTodayCount > 0) {
-    warnings.push(`Đã tự động xóa ${removedTodayCount} dữ liệu của ngày hiện tại (${todayLabel}).`);
+    warnings.push(`Đã tự động loại bỏ ${removedTodayCount} đơn của ngày hiện tại / đã thao tác trong ngày (${todayLabel}).`);
   }
   if (missingInT2) {
     warnings.push(`${missingInT2} mã không có trong file Trạng thái MVĐ — dùng thông tin từ file Giám sát tồn kho chi tiết.`);

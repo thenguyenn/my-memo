@@ -670,12 +670,12 @@ export function Chay24h() {
     showNotice(`Đã lưu cập nhật cho ${codes.length} vận đơn`);
   };
 
-  // Chuẩn hóa dữ liệu + tự động loại bỏ mọi bản ghi có ngày hàng đến trùng ngày hiện tại
+  // Chuẩn hóa dữ liệu + tự động loại bỏ mọi bản ghi có ngày hàng đến hoặc ngày thao tác trùng ngày hiện tại
   const allRows = useMemo(() => {
     if (!dataset?.rows) return [];
     const now = new Date();
     return dataset.rows
-      .filter((r) => !isRowFromCurrentDay(r.thoiGianQuetDen, null, now))
+      .filter((r) => !isRowFromCurrentDay(r.thoiGianQuetDen, null, now, r.thoiGianThaoTac, r.thoiGianKienVanDe))
       .map((r) => {
         const c = care[r.maVanDon];
 
